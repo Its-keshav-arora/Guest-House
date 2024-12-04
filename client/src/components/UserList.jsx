@@ -33,13 +33,13 @@ export default function UserList() {
   const [showRemove, setShowRemove] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  
-  
+
+
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
   const http = privateRequest(user.accessToken, user.refreshToken);
-  
+
   const options = ["Name", "Email", "Contact", "Role"];
   const roles = [
     'USER',
@@ -81,7 +81,10 @@ export default function UserList() {
 
   const filterUsers = () => {
     const tempUsers = users.filter((user) => {
-      return user[filterMap[searchChoice]]
+      console.log(searchChoice);
+      const effectiveSearchChoice = searchChoice === "Filter" ? "Name" : searchChoice;
+      console.log(searchChoice);
+      return user[filterMap[effectiveSearchChoice]]
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
     });
@@ -143,7 +146,7 @@ export default function UserList() {
       }
     }
   };
-  
+
   const handleClose = () => {
     setAnchorEl(null);
     setSelectedUserId(null);
@@ -202,7 +205,7 @@ export default function UserList() {
           )}
         </div>
         <TextField
-          label="Search items"
+          label="Search users"
           variant="outlined"
           className="col-span-10 w-full p-2.5 h-full"
           value={searchTerm}
@@ -232,7 +235,7 @@ export default function UserList() {
             <div className="w-[17%]">Pending Requests</div>
             <div className="w-[17%] ">Role</div>
             <div className="flex justify-evenly gap-2 w-[5%]">
-              
+
             </div>
           </div>
         </div>
@@ -265,7 +268,7 @@ export default function UserList() {
                   <div className="w-[17%]">{user.role}</div>
                   <div className="w-[5%]">
                     <IconButton edge="end" aria-label="comments" onClick={handleEdit(user._id)}>
-                      <EditIcon/>
+                      <EditIcon />
                     </IconButton>
                     <Menu
                       anchorEl={anchorEl}
