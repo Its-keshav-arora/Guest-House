@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { privateRequest } from "../utils/useFetch";
 import { useSelector } from "react-redux";
 import { getDate } from "../utils/handleDate";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useResolvedPath } from "react-router-dom";
 import RoomList from "../components/RoomList";
 
 const RoomBooking = () => {
@@ -15,6 +15,7 @@ const RoomBooking = () => {
   const guestName = userRecord.guestName;
   const user = useSelector((state) => state.user);
   const http = privateRequest(user.accessToken, user.refreshToken);
+  const room_allot = userRecord.numberOfRooms;
 
   const fetchRooms = async () => {
     try {
@@ -28,7 +29,6 @@ const RoomBooking = () => {
       else toast.error("Failed to fetch rooms");
     }
   };
-
   const convertToDate = (date) => {
     return new Date(new Date(date).toISOString());
   };
@@ -50,6 +50,12 @@ const RoomBooking = () => {
     new Date(userRecord.departureDate).toISOString().substring(0, 10)
   );
   const [roomList, setRoomList] = useState([]);
+  const [counter, setCounter] = useState(0);
+
+  useEffect(() => {
+    setCounter(roomList.length);
+  }, [roomList]);
+
 
   useEffect(() => {
     handleFilter();
@@ -133,16 +139,11 @@ const RoomBooking = () => {
     }
   };
 
-  const deleteRoom = (room) => {
-    const updatedRoomList = roomList.filter((currRoom) => currRoom !== room);
-    setRoomList(updatedRoomList);
-  };
-
   return (
     <div className="room-booking h-fit ">
       <h2 className="room-heading text-4xl font-bold">Room Booking</h2>
       <div className="filter-container">
-        
+
         <div>
           <label className="filter-label">Start Date:</label>
           <input
@@ -168,17 +169,32 @@ const RoomBooking = () => {
         {rooms.map((room) => (
           <div
             key={room.id}
-            className={`room ${
-              room.bookings.length > 0
-                ? "booked-during-range cursor-not-allowed rounded-lg bg-[rgb(191,190,190)] text-white"
-                : "available cursor-pointer border-[3px] hover:bg-green-500 border-green-500 rounded-lg"
-            }`}
+            className={`room ${room.bookings.length > 0
+              ? "booked-during-range cursor-not-allowed rounded-lg bg-[rgb(191,190,190)] text-white"
+              : "available cursor-pointer border-[3px] hover:bg-green-500 border-green-500 rounded-lg"
+              }`}
           >
             <div
               className="room-info"
               onClick={() => {
-                addRoom(room);
+                if (counter < room_allot) {
+                  setCounter((prevCounter) => {
+                    const newCounter = prevCounter + 1;
+                    if (newCounter <= room_allot) {
+                      addRoom(room);
+                      // toast.success(newCounter);
+                      toast.success("Room added successfully");
+                      console.log(newCounter, "is the counter");
+                    } else {
+                      toast.error("Alloting more rooms");
+                    }
+                    return newCounter;
+                  });
+                } else {
+                  toast.error("Alloting more rooms");
+                }
               }}
+
             >
               <h3>{room.roomNumber}</h3>
               {room.bookings.length > 0 && (
@@ -198,7 +214,7 @@ const RoomBooking = () => {
           </div>
         ))}
       </div>
-      <RoomList roomList={roomList} setRoomList={setRoomList} id={id} />
+      <RoomList roomList={roomList} counter={counter} setCounter={setCounter} setRoomList={setRoomList} id={id} />
     </div>
   );
 };
