@@ -33,7 +33,7 @@ const DiningWorkflow = ({ id, userRecord, reviewers, setReviewers }) => {
               </div>
             </div>
             <div className="flex items-baseline justify-between w-full">
-              <div>Confirm Payment ID:</div>
+              <div>Confirm ID:</div>
               <div>
                 <input
                   onChange={(e) =>
@@ -56,6 +56,7 @@ const DiningWorkflow = ({ id, userRecord, reviewers, setReviewers }) => {
                     return;
                   }
                   diningRecord.payment.paymentId = paymentId.id;
+                  diningRecord.payment.status = "PAID";
                   console.log(diningRecord);
                   try {
                     http.put("/dining/" + id, diningRecord);

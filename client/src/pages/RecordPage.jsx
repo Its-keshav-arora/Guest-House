@@ -5,6 +5,11 @@ import axios from "axios"; // Assuming you use axios for API requests
 import Workflow from "../components/Workflow";
 import { privateRequest } from "../utils/useFetch";
 import { getDate, getTime } from "../utils/handleDate";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { IconButton } from "@mui/material";
+import { toast } from "react-toastify";
+
+
 
 export default function RecordPage() {
   const { id } = useParams();
@@ -37,20 +42,23 @@ export default function RecordPage() {
     category: "",
   });
 
-  
-  const roomPricesB = {'Single Occupancy': 600, 'Double Occupancy': 850}
-  const roomPricesC = {'Single Occupancy': 900, 'Double Occupancy': 1250}
-  const roomPricesD = {'Single Occupancy': 1300, 'Double Occupancy': 1800}
+
+  const roomPricesB = { 'Single Occupancy': 600, 'Double Occupancy': 850 }
+  const roomPricesC = { 'Single Occupancy': 900, 'Double Occupancy': 1250 }
+  const roomPricesD = { 'Single Occupancy': 1300, 'Double Occupancy': 1800 }
+
 
 
   useEffect(() => {
     const fetchRecord = async () => {
       try {
         const response = await http.get(`/reservation/${id}`);
+        console.log("I am response:");
+        console.log(response.data.reservation);
         setStatus("Success");
         setUserRecord(response.data.reservation);
         setReviewers(response.data.reservation.reviewers);
-        
+
       } catch (error) {
         setStatus("Error");
         console.error("Error fetching user data:", error);
@@ -94,6 +102,7 @@ export default function RecordPage() {
           reviewers={reviewers}
           setReviewers={setReviewers}
         />
+        {/* <h1>{id}</h1> */}
 
         <div className='col-span-5 shadow-lg flex flex-col overflow-x-auto justify-center gap-4 font-["Dosis"] bg-[rgba(255,255,255,0.5)] rounded-lg pt-4'>
           <div className="flex justify-between px-32">
@@ -103,7 +112,7 @@ export default function RecordPage() {
           <hr />
           <div className="flex justify-between px-32">
             <p className="p-1 text-xl font-semibold">Applicant name:</p>
-            <p className="p-1 text-lg">{userRecord.applicant?userRecord.applicant.name:'N/A'}</p>
+            <p className="p-1 text-lg">{userRecord.applicant ? userRecord.applicant.name : 'N/A'}</p>
           </div>
           <hr />
           <div className="flex justify-between px-32">
@@ -155,7 +164,7 @@ export default function RecordPage() {
             <p className="p-0 text-xl font-semibold">Category:</p>
             <p className="p-0 text-lg">{userRecord.category}</p>
           </div>
-          
+
           <hr />
           <div className="flex justify-between px-32 pb-5">
             <p className="p-0 text-xl font-semibold">Room Fare:</p>
@@ -167,7 +176,33 @@ export default function RecordPage() {
           </div>
           <div className="flex justify-between px-32 pb-5">
             <p className="p-0 text-xl font-semibold">Total Amount:</p>
-            <p className="p-0 text-lg">Rs. {userRecord.payment.amount+totalDiningFare}/- only</p>
+            <p className="p-0 text-lg">Rs. {userRecord.payment.amount + totalDiningFare}/- only</p>
+          </div>
+          <div className="flex justify-between px-32 pb-5">
+          {user.role === "CASHIER" &&
+              userRecord.payment.status === "PAID" &&
+              !userRecord.checkOut && <p className="p-0 text-xl font-semibold">checkout user:</p> }
+            {user.role === "CASHIER" &&
+              userRecord.payment.status === "PAID" &&
+              !userRecord.checkOut && (
+                <IconButton>
+                  <LogoutIcon
+                    onClick={async () => {
+                      try {
+                        const res = await http.put(
+                          "/reservation/checkout/" + userRecord._id
+                        );
+                        toast.success("Checked out successfully");
+                        window.location.reload();
+                      } catch (error) {
+                        console.log(error);
+                        toast.error(error.response?.data?.message);
+                      }
+                    }}
+                    color="black"
+                  />
+                </IconButton>
+              )}
           </div>
         </div>
       </div>
@@ -210,7 +245,7 @@ export default function RecordPage() {
                     <div className="w-20">{booking.roomNumber}</div>
                   </div>
                 ))}
-            </div>
+              </div>
             </div>
           </div>
         )}
